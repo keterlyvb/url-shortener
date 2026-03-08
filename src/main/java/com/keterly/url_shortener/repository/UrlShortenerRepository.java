@@ -1,0 +1,10 @@
+package com.keterly.url_shortener.repository;
+
+import com.keterly.url_shortener.entity.UrlEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UrlShortenerRepository extends JpaRepository<UrlEntity, Long> {
+
+}
