@@ -22,4 +22,12 @@ url-shortener:
   obfuscation-secret: ${URL_SHORTENER_SECRET:123456}
   base-url: ${URL_SHORTENER_BASE_PATH:https://short.lee/}
 
+security:
+  api-key: ${API_KEY:local-dev-api-key}
+
+logging:
+  level:
+    root: INFO
+    com.keterly.url_shortener: INFO
+
 

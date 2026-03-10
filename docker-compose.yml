@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  url-shortener:
+    build: .
+    container_name: url-shortener
+    ports:
+      - "8080:8080"
+    environment:
+      API_KEY: local-dev-api-key

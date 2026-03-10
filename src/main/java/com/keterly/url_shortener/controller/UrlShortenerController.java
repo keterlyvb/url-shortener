@@ -2,10 +2,15 @@ package com.keterly.url_shortener.controller;
 
 import com.keterly.url_shortener.dto.request.CreateUrlShortenerRequest;
 import com.keterly.url_shortener.dto.response.CreateUrlShortenerResponse;
+import com.keterly.url_shortener.dto.response.UrlDetailsResponse;
 import com.keterly.url_shortener.service.UrlShortenerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.net.URI;
 
@@ -17,21 +22,40 @@ public class UrlShortenerController {
     UrlShortenerService service;
 
     @PostMapping("/urls")
-    public ResponseEntity<CreateUrlShortenerResponse> createUrlShortener(@RequestBody CreateUrlShortenerRequest request){
+    public ResponseEntity<CreateUrlShortenerResponse> createUrlShortener(@Valid @RequestBody CreateUrlShortenerRequest request){
 
         CreateUrlShortenerResponse response = service.createUrl(request);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{shortUrl}")
-    public ResponseEntity<Void> getByShortUrl(@PathVariable String shortUrl){
+    @GetMapping("/{shortCode}")
+    public ResponseEntity<Void> redirectToOriginalUrl(@PathVariable String shortCode){
 
-        String originalUrl = service.getOriginalUrlByShortId(shortUrl);
+        String originalUrl = service.getOriginalUrlByShortCode(shortCode);
 
         return ResponseEntity
-                .status(302)
+                .status(HttpStatus.FOUND)
                 .location(URI.create(originalUrl))
                 .build();
 
     }
+
+    @GetMapping("/urls/{id}")
+    public ResponseEntity<UrlDetailsResponse> getUrlDetails(@PathVariable String id) {
+        return ResponseEntity.ok(service.getUrlDetails(id));
+    }
+
+    @GetMapping("/urls")
+    public ResponseEntity<Page<UrlDetailsResponse>> listUrls(Pageable pageable) {
+        return ResponseEntity.ok(service.listUrls(pageable));
+    }
+
+//    @GetMapping("/urls/{id}")
+//    public ResponseEntity<GetUrlResponse> getUrlDetails(@PathVariable String id) {
+//
+//        CreateUrlShortenerResponse response = service.getUrlDetails(id);
+//
+//        return ResponseEntity.ok(response);
+//    }
+
 }
