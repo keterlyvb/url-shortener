@@ -25,7 +25,7 @@ public class UrlShortenerController {
     public ResponseEntity<CreateUrlShortenerResponse> createUrlShortener(@Valid @RequestBody CreateUrlShortenerRequest request){
 
         CreateUrlShortenerResponse response = service.createUrl(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{shortCode}")
@@ -49,13 +49,5 @@ public class UrlShortenerController {
     public ResponseEntity<Page<UrlDetailsResponse>> listUrls(Pageable pageable) {
         return ResponseEntity.ok(service.listUrls(pageable));
     }
-
-//    @GetMapping("/urls/{id}")
-//    public ResponseEntity<GetUrlResponse> getUrlDetails(@PathVariable String id) {
-//
-//        CreateUrlShortenerResponse response = service.getUrlDetails(id);
-//
-//        return ResponseEntity.ok(response);
-//    }
 
 }
