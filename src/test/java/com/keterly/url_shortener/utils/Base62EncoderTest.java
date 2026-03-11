@@ -1,30 +1,50 @@
 package com.keterly.url_shortener.utils;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class Base62EncoderTest {
 
     @Test
-    void shouldEncodeAndDecodeSuccessfully() {
-        long original = 12345L;
+    void shouldEncodeLongToBase62Correctly() {
+        String result = Base62Encoder.encode(123457L);
 
-        String encoded = Base62Encoder.encode(original);
+        assertEquals("W7F", result);
+    }
+
+    @Test
+    void shouldDecodeBase62ToLongCorrectly() {
+        long result = Base62Encoder.decode("W7F");
+
+        assertEquals(123457L, result);
+    }
+
+    @Test
+    void shouldReturnZeroWhenEncodingZero() {
+        String result = Base62Encoder.encode(0L);
+
+        assertEquals("0", result);
+    }
+
+    @Test
+    void shouldReturnOriginalValueAfterEncodeAndDecode() {
+        long originalValue = 999999L;
+
+        String encoded = Base62Encoder.encode(originalValue);
         long decoded = Base62Encoder.decode(encoded);
 
-        assertEquals(original, decoded);
+        assertEquals(originalValue, decoded);
     }
 
     @Test
-    void shouldEncodeZero() {
-        assertEquals("0", Base62Encoder.encode(0));
-    }
+    void shouldThrowExceptionWhenDecodingInvalidCharacter() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> Base62Encoder.decode("W7#")
+        );
 
-    @Test
-    void shouldThrowExceptionForInvalidCharacter() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> Base62Encoder.decode("@@@"));
-
-        assertTrue(ex.getMessage().contains("Invalid Base62 character"));
+        assertEquals("Invalid Base62 character: #", exception.getMessage());
     }
 }

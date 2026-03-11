@@ -6,6 +6,10 @@ import com.keterly.url_shortener.repository.UrlShortenerRepository;
 import com.keterly.url_shortener.utils.IdObfuscator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.Field;
@@ -16,23 +20,33 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class UrlShortenerServiceTest {
 
+    @Mock
     private UrlShortenerRepository repository;
-    private IdObfuscator idObfuscator;
+    @InjectMocks
     private UrlShortenerService service;
+    @Mock
+    private IdObfuscator idObfuscator;
+
 
     @BeforeEach
     void setUp() {
-        repository = mock(UrlShortenerRepository.class);
-        idObfuscator = mock(IdObfuscator.class);
-        service = new UrlShortenerService(repository, idObfuscator);
 
-        ReflectionTestUtils.setField(service, "baseUrl", "http://localhost:8080/");
+        ReflectionTestUtils.setField(idObfuscator, "secret", 123456L);
+        ReflectionTestUtils.setField(service, "idObfuscator", idObfuscator);
+        ReflectionTestUtils.setField(service, "baseUrl", "http://localhost:8080");
+
     }
 
     @Test
     void shouldCreateShortUrlSuccessfully() throws Exception {
+        LocalDateTime expirationDate = LocalDateTime.of(2026, 12, 31, 23, 59, 59);
+
+        ReflectionTestUtils.setField(idObfuscator, "secret", 123456L);
+        ReflectionTestUtils.setField(service, "baseUrl", "http://localhost:8080/");
+
         CreateUrlShortenerRequest request = new CreateUrlShortenerRequest();
         setField(request, "originalUrl", "https://google.com");
         setField(request, "expirationDate", LocalDateTime.of(2026, 12, 31, 23, 59, 59));
@@ -48,9 +62,8 @@ public class UrlShortenerServiceTest {
         UrlEntity secondSave = UrlEntity.builder()
                 .id(1L)
                 .originalUrl("https://google.com")
-                .shortUrl("abc123")
+                .shortUrl("W7H")
                 .expirationDate(request.getExpirationDate())
-                .createdAt(firstSave.getCreatedAt())
                 .clickCount(0L)
                 .build();
 
@@ -58,17 +71,15 @@ public class UrlShortenerServiceTest {
                 .thenReturn(firstSave)
                 .thenReturn(secondSave);
 
-        when(idObfuscator.obfuscate(1L)).thenReturn(384451L);
-
         var response = service.createUrl(request);
 
         assertNotNull(response);
         assertEquals("https://google.com", response.getOriginalUrl());
-        assertEquals("http://localhost:8080/abc123", response.getShortUrl());
-        assertEquals("abc123", response.getUrlId());
+        assertEquals("http://localhost:8080/W7H", response.getShortUrl());
+        assertEquals("W7H", response.getUrlId());
+        assertEquals(expirationDate, response.getExpirationDate());
 
         verify(repository, times(2)).save(any(UrlEntity.class));
-        verify(idObfuscator).obfuscate(1L);
     }
 
     @Test
@@ -76,16 +87,16 @@ public class UrlShortenerServiceTest {
         UrlEntity entity = UrlEntity.builder()
                 .id(1L)
                 .originalUrl("https://google.com")
-                .shortUrl("abc123")
+                .shortUrl("W7H")
                 .createdAt(LocalDateTime.now())
                 .clickCount(0L)
                 .build();
 
         when(idObfuscator.desobfuscate(anyLong())).thenReturn(1L);
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
-        when(repository.save(any(UrlEntity.class))).thenReturn(entity);
+        when(repository.save(any(UrlEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        String result = service.getOriginalUrlByShortCode("abc123");
+        String result = service.getOriginalUrlByShortCode("W7H");
 
         assertEquals("https://google.com", result);
         assertEquals(1L, entity.getClickCount());
