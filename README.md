@@ -83,6 +83,14 @@ Somente testes de integração:
 ./mvnw -Dtest=UrlShortenerIntegrationTest test
 ```
 
+## Como acessar o console do H2 no navegador: 
+
+1. Acesse seu navegador e insira: http://localhost:8080/h2-console
+
+2. No campo "JDBC URL" insira: jdbc:h2:mem:urlshortener
+
+3. Clique em "Conect"
+
 ## Autenticação (header obrigatório no POST)
 
 Para criar short URL, envie:
