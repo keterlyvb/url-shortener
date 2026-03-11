@@ -23,7 +23,7 @@ url-shortener:
   base-url: ${URL_SHORTENER_BASE_PATH:https://short.lee/}
 
 security:
-  api-key: ${API_KEY:local-dev-api-key}
+  api-key: ${API_KEY:token-x-men}
 
 logging:
   level:
